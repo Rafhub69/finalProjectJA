@@ -4,67 +4,188 @@
 cell::cell()
 {
 	topWall = true;
-	leftWall = true;
 	rightWall = true;
 	bottomWall = true;
+	leftWall = true;
+
+	isVisited = false;
 }
 
-labiryntCreator::labiryntCreator(int newHeight, int newWidth)
+cell::cell(int col_, int row_)
 {
-	
+	column = col_;
+	row = row_;
+
+	topWall = true;
+	rightWall = true;
+	bottomWall = true;
+	leftWall = true;
+
+	isVisited = false;
+}
+
+int cell::getColumn()
+{
+	return column;
+}
+
+int cell::getRow()
+{
+	return row;
+}
+
+void cell::setVisited(bool newState)
+{
+	isVisited = newState;
+}
+
+bool cell::getVisited()
+{
+	return isVisited;
+}
+
+void  cell::setLeftWall(bool newValue)
+{
+	this->leftWall = newValue;
+}
+
+void  cell::setRighttWall(bool newValue) {
+
+	this->rightWall = newValue;
+}
+
+void  cell::setTopWall(bool newValue)
+{
+	this->topWall = newValue;
+}
+
+void  cell::setBottomWall(bool newValue)
+{
+	this->bottomWall = newValue;
+}
+
+
+void mazeCreator::removeWall(int indexA, int indexB)
+{
+	int x = maze.at(indexA).getColumn() - maze.at(indexB).getColumn();
+	int y  = maze.at(indexA).getRow() - maze.at(indexB).getRow();
+
+	if (x == 1)
+	{
+		maze.at(indexA).setLeftWall(false);
+		maze.at(indexB).setRighttWall(false);
+	}
+	else if (x == -1)
+	{
+		maze.at(indexB).setLeftWall(false);
+		maze.at(indexA).setRighttWall(false);
+	}
+
+	if (y == 1)
+	{
+		maze.at(indexA).setTopWall(false);
+		maze.at(indexB).setBottomWall(false);
+	}
+	else if (y == -1)
+	{
+		maze.at(indexB).setTopWall(false);
+		maze.at(indexA).setBottomWall(false);
+	}
+
+
+
+}
+
+mazeCreator::mazeCreator(int labiryntWidth, int labiryntHeight, int cellSize)
+{
+	 colls = static_cast<int>(labiryntWidth / cellSize);
+	 rows = static_cast<int>(labiryntHeight / cellSize);
+
+	 currentCellIndex = 0;
+
+	 maze.at(currentCellIndex).setVisited(true);
+
+	 while (maze.size() != route.size())
+	 {
+		 cell next = checkNeightbours(maze.at(currentCellIndex).getColumn(), maze.at(currentCellIndex).getRow());
+
+		 if (next.getColumn() != maze.at(currentCellIndex).getColumn() && next.getRow() != maze.at(currentCellIndex).getRow())
+		 {
+			 next.setVisited(true);
+
+			 route.push_back(next);
+
+			 removeWall(currentCellIndex, index(next.getColumn(), next.getRow()));
+
+			 currentCellIndex = index(next.getColumn(), next.getRow());
+		 }
+		 else if (route.size() > 0)
+		 {
+			 cell n = route.at(route.size() - 1);
+			 route.pop_back();
+			 currentCellIndex = index(n.getColumn(), n.getRow());
+		 }
+	 }
+	 
+}
+
+
+
+int mazeCreator::index(int i, int j)
+{
+	if (i < 0 || j < 0  || i > colls - 1 || j > rows - 1)
+	{
+		return -1;
+	}
+
+	return i + j * colls;
+}
+
+void mazeCreator::labiryntCreator(int newHeight, int newWidth)
+{
 	for (int i = 0; i < newHeight; i++)
 	{
-		std::vector<cell> v;
-		cell c;
-
 		for (int j = 0; j < newHeight; j++)
 		{
-			v.push_back(c);
+			cell c(j, i);
+			maze.push_back(c);
 		}
-
-		maze.push_back(v);
 	}
 
-	maze.at(currentCellx).at(currentCelly).visited = true;
-	cell neightbour = checkNeightbours(currentCellx, currentCelly);
-
-	if (neightbour != nullptr)
-	{
-		neightbour.visited = true;
-
-	}
 }
 
-cell labiryntCreator::checkNeightbours(int cellX, int cellY)
+cell mazeCreator::checkNeightbours(int cellX, int cellY)
 {
 	srand((unsigned)time(NULL));
 
 	std::vector< cell> neightbours;
 
-	cell top = maze.at(cellX).at(cellY - 1);
-	cell right = maze.at(cellX  + 1).at(cellY);
-	cell left = maze.at(cellX - 1).at(cellY);
-	cell down = maze.at(cellX).at(cellY + 1);
+	cell top = maze.at(index(cellX, cellY - 1));
+	cell right = maze.at(index(cellX + 1, cellY));
+	cell left = maze.at(index(cellX - 1, cellY));
+	cell bottom = maze.at(index(cellX, cellY + 1));
 
-	if (!top.visited)
+	if (index(cellX, cellY - 1) != -1 && !top.getVisited())
 	{
 		neightbours.push_back(top);
 	}
 
-	if (!right.visited)
+	if (index(cellX + 1, cellY) != -1 && !right.getVisited())
 	{
 		neightbours.push_back(right);
 	}
 
-	if (!left.visited)
+	if (index(cellX, cellY + 1) != -1 && !bottom.getVisited())
+	{
+		neightbours.push_back(bottom);
+	}
+
+	if (index(cellX - 1, cellY) != -1 && !left.getVisited())
 	{
 		neightbours.push_back(left);
 	}
 
-	if (!down.visited)
-	{
-		neightbours.push_back(down);
-	}
+	
 
 	if (neightbours.size() > 0)
 	{
@@ -72,12 +193,17 @@ cell labiryntCreator::checkNeightbours(int cellX, int cellY)
 
 		return neightbours.at(r);
 	}
+	else
+	{
+		return maze.at(index(cellX, cellY));
+	}
 
-	return nullptr;
+
 }
 
 
-bool createLabirynt(int height, int width)
+int createLabirynt(int coreNumber, int labiryntWidth, int labiryntHeight, int cellSize)
 {
-	return false;
+	mazeCreator newMaze(labiryntWidth, labiryntHeight, cellSize);
+
 }
