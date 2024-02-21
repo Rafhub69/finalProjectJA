@@ -64,6 +64,26 @@ void  cell::setBottomWall(bool newValue)
 	this->bottomWall = newValue;
 }
 
+bool cell::getLeftWall()
+{
+	return this->leftWall;
+}
+
+bool cell::getRighttWall()
+{
+	return this->rightWall;
+}
+
+bool cell::getTopWall()
+{
+	return this->topWall;
+}
+
+bool cell::getBottomWall()
+{
+	return this->bottomWall;
+}
+
 
 void mazeCreator::removeWall(int indexA, int indexB)
 {
@@ -154,6 +174,16 @@ void mazeCreator::labiryntCreator(int newHeight, int newWidth)
 
 }
 
+cell mazeCreator::getCellInRoute(int index)
+{
+	return route.at(index);
+}
+
+int mazeCreator::getRouteSize()
+{
+	return route.size();
+}
+
 cell mazeCreator::checkNeightbours(int cellX, int cellY)
 {
 	srand((unsigned)time(NULL));
@@ -202,8 +232,31 @@ cell mazeCreator::checkNeightbours(int cellX, int cellY)
 }
 
 
-int createLabirynt(int coreNumber, int labiryntWidth, int labiryntHeight, int cellSize)
+bool createLabirynt(int coreNumber, int labiryntWidth, int labiryntHeight, int cellSize, int* ar, long* len)
 {
 	mazeCreator newMaze(labiryntWidth, labiryntHeight, cellSize);
 
+	cell newCell;
+
+	int n = 0;
+
+	*len = 3330;
+	auto size = (*len) * sizeof(int);
+
+
+	for (int i = 0; i < newMaze.getRouteSize(); i++)
+	{
+		newCell = newMaze.getCellInRoute(i);
+
+		ar[n] = newCell.getColumn();
+		ar[n + 1] = newCell.getRow();
+		ar[n + 2] = int(newCell.getLeftWall());
+		ar[n + 3] = int(newCell.getBottomWall());
+		ar[n + 4] = int(newCell.getRighttWall());
+		ar[n + 5] = int(newCell.getTopWall());
+
+		n += 6;
+	}
+	
+	return true;
 }

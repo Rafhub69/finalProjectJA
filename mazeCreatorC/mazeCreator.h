@@ -3,6 +3,7 @@
 #include <vector>
 #include <random>
 #include <thread>
+#include <iostream>
 
 #ifdef MAZECREATOR_EXPORTS
 #define MAZECREATOR_API __declspec(dllexport)
@@ -31,6 +32,11 @@ public:
 	void setTopWall(bool newValue);
 	void setBottomWall(bool newValue);
 
+	bool getLeftWall();
+	bool getRighttWall();
+	bool getTopWall();
+	bool getBottomWall();
+
 };
 
 class mazeCreator
@@ -44,13 +50,20 @@ public:
 	mazeCreator(int labiryntWidth, int labiryntHeight, int cellSize);
 
 	void labiryntCreator(int newHeight, int newWidth);
-	cell checkNeightbours(int cellX, int cellY);
 
 	void removeWall(int curentIdex, int nextIdex);
 
+	cell checkNeightbours(int cellX, int cellY);
+
+	cell getCellInRoute(int index);
+
 	int index(int i, int j);
+
+	int getRouteSize();
+
+	
 
 };
 
-extern "C" MAZECREATOR_API int createLabirynt(int coreNumber, int labiryntWidth, int labiryntHeight, int cellSize);
+extern "C" MAZECREATOR_API bool createLabirynt(int coreNumber, int labiryntWidth, int labiryntHeight, int cellSize, int *ar, long* len);
 
