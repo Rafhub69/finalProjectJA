@@ -153,7 +153,7 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(12, 897);
+            label4.Location = new Point(12, 896);
             label4.Name = "label4";
             label4.Size = new Size(62, 15);
             label4.TabIndex = 10;
@@ -163,7 +163,7 @@
             // 
             radioButton1.AutoSize = true;
             radioButton1.Checked = true;
-            radioButton1.Location = new Point(13, 924);
+            radioButton1.Location = new Point(13, 923);
             radioButton1.Name = "radioButton1";
             radioButton1.Size = new Size(49, 19);
             radioButton1.TabIndex = 11;
@@ -175,7 +175,7 @@
             // radioButton2
             // 
             radioButton2.AutoSize = true;
-            radioButton2.Location = new Point(12, 949);
+            radioButton2.Location = new Point(12, 948);
             radioButton2.Name = "radioButton2";
             radioButton2.Size = new Size(75, 19);
             radioButton2.TabIndex = 12;

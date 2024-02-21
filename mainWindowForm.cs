@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Windows.Forms;
 
 
@@ -11,11 +12,11 @@ namespace FinalProgramJA
     public partial class Labirynt : Form
     {
 
-        [DllImport(@"C:\Users\Rafa許source\repos\TestProgram\x64\Debug\add.dll")]
+        [DllImport(@"C:\Users\Rafa許source\repos\TestProgram\x64\Debug\mazeCreatorAsembler.dll")]
         static extern int MyProc1(int a, int b);
 
-        [DllImport(@"C:\Users\Rafa許source\repos\TestProgram\x64\Debug\addC.dll")]
-        static extern int createLabirynt(int coreNumber, int labiryntWidth, int labiryntHeight, int cellSize);
+        [DllImport(@"C:\Users\Rafa許source\repos\TestProgram\x64\Debug\mazeCreatorC.dll")]
+        static extern bool createLabirynt(int coreNumber, int labiryntWidth, int labiryntHeight, int cellSize, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] out int[] arr, out int length);
 
         private int[] intTableSize = { 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37 };
         private int labirynthHeight;
@@ -25,6 +26,7 @@ namespace FinalProgramJA
         private int cellHeight;
         private int myImageId;
         private int cellWidth;
+        private int[] labi;
         Bitmap image;
 
 
@@ -69,12 +71,19 @@ namespace FinalProgramJA
             }
 
             labirynth = new bool[labirynthHeight, labirynthWidth];
+            labi = new int[labirynthHeight * labirynthWidth * 6];
 
             for (int i = 0; i < labirynthHeight; i++)
             {
                 for (int j = 0; j < labirynthWidth; j++)
                 {
                     labirynth[i, j] = true;
+                    labi[i * labirynthWidth + j] = i;
+                    labi[i * labirynthWidth + j + 1] = j;
+                    labi[i * labirynthWidth + j + 2] = 1;
+                    labi[i * labirynthWidth + j + 3] = 1;
+                    labi[i * labirynthWidth + j + 4] = 1;
+                    labi[i * labirynthWidth + j + 4] = 1;
                 }
             }
 
@@ -83,35 +92,36 @@ namespace FinalProgramJA
 
             Stopwatch stopwatch = new Stopwatch();
 
+            stopwatch.Start();
+
+            int size = labi.Length;
+
             if (loadedLibrary)
             {
-                stopwatch.Start();
-
                 //c++
-               int lab = createLabirynt(hScrollBar1.Value, labirynthWidth, labirynthHeight, cellWidth);
+                bool lab = createLabirynt(hScrollBar1.Value, labirynthWidth, labirynthHeight, cellWidth, out labi, out size);
 
-                stopwatch.Stop();
-
-                label8.Text = stopwatch.ElapsedMilliseconds.ToString();
+                
             }
             else
             {
 
-                stopwatch.Start();
 
-                //asembler
-
-                stopwatch.Stop();
-
-                label8.Text = stopwatch.ElapsedMilliseconds.ToString();
 
             }
+
+            stopwatch.Stop();
+
+            label8.Text = stopwatch.ElapsedMilliseconds.ToString();
 
 
             image = new Bitmap(totalWidth, totalHeight);
             Graphics graphics = Graphics.FromImage(image);
 
-            Pen blackPen = new Pen(Color.Black, 10);
+            Pen redPen = new Pen(Color.Red, 5);
+            Pen whitePen = new Pen(Color.White, 5);
+            Pen blackPen = new Pen(Color.Black, 5);
+
             Brush whiteBrush = new SolidBrush(Color.White);
             Brush blackBrush = new SolidBrush(Color.Black);
             Rectangle rectangle;
@@ -121,20 +131,21 @@ namespace FinalProgramJA
                 for (int j = 0; j < labirynthWidth; j++)
                 {
                     rectangle = new Rectangle(j * cellWidth, i * cellHeight, cellWidth, cellHeight);
-                    graphics.DrawRectangle(blackPen, rectangle);
+                    //TOP
+                    graphics.DrawLine(blackPen, rectangle.X, rectangle.Y, rectangle.Right, rectangle.Y);
+                    //LEFT
+                    graphics.DrawLine(blackPen, rectangle.X, rectangle.Y, rectangle.X, rectangle.Bottom);
+                    //RIGHT
+                    graphics.DrawLine(blackPen, rectangle.Right, rectangle.Bottom, rectangle.Right, rectangle.Y);
+                    //BOTTOM
+                    graphics.DrawLine(blackPen, rectangle.Right, rectangle.Bottom, rectangle.X, rectangle.Bottom);
 
                     if (labirynth[i, j] == true)
                     {
-                        //graphics.FillRectangle(whiteBrush, rectangle);
-
-                        graphics.DrawLine(blackPen, 0, 0, 0, totalHeight);
-                        graphics.DrawLine(blackPen, 0, 0, totalWidth, 0);
-                        graphics.DrawLine(blackPen, totalWidth, totalHeight, 0, totalHeight);
-                        graphics.DrawLine(blackPen, totalWidth, totalHeight, totalWidth, 0);
+                        graphics.FillRectangle(whiteBrush, rectangle);
                     }
                     else
                     {
-                        //graphics.FillRectangle(blackBrush, rectangle);
 
                         graphics.DrawLine(blackPen, 0, 0, 0, totalHeight);
                         graphics.DrawLine(blackPen, 0, 0, totalWidth, 0);
@@ -145,6 +156,50 @@ namespace FinalProgramJA
 
                 }
             }
+
+            int randomvalue;
+            byte[] rno = new byte[5];
+
+
+            //Start
+            graphics.DrawLine(whitePen, 0, 0, cellWidth, 0);
+
+            for (int i = 0; i < labirynthHeight; i++)
+            {
+                for (int j = 0; j < labirynthWidth; j++)
+                {
+                    using (RNGCryptoServiceProvider rg = new RNGCryptoServiceProvider())
+                    {
+                        rg.GetBytes(rno);
+                        randomvalue = BitConverter.ToInt32(rno, 0);
+                    }
+
+                    if (labi[i * labirynthWidth + j + 2] == 1 && randomvalue > 5)
+                    {
+                        graphics.DrawLine(whitePen, j * cellWidth, i * cellHeight, j * cellWidth, i * cellHeight + cellHeight);
+                    }
+
+                    if (labi[i * labirynthWidth + j + 3] == 1)
+                    {
+                        graphics.DrawLine(whitePen, j * cellWidth + cellWidth, i * cellHeight + cellHeight, j * cellWidth, i * cellHeight + cellHeight);
+                    }
+
+                    if (labi[i * labirynthWidth + j + 4] == 1 && randomvalue < 15)
+                    {
+                        graphics.DrawLine(whitePen, j * cellWidth + cellWidth, i * cellHeight + cellHeight, j * cellWidth + cellWidth, i * cellHeight);
+                    }
+
+                    if (labi[i * labirynthWidth + j + 5] == 1)
+                    {
+                        graphics.DrawLine(whitePen, j * cellWidth, i * cellHeight, j * cellWidth + cellWidth, i * cellHeight);
+                    }
+                }
+            }
+
+            graphics.DrawLine(blackPen, 0, 0, 0, totalHeight);
+            graphics.DrawLine(blackPen, 0, 0, totalWidth, 0);
+            graphics.DrawLine(blackPen, totalWidth, totalHeight, 0, totalHeight);
+            graphics.DrawLine(blackPen, totalWidth, totalHeight, totalWidth, 0);
 
             string filePath = "image" + myImageId + ".jpg";
             image.Save(filePath);
@@ -201,12 +256,14 @@ namespace FinalProgramJA
         {
             Stopwatch stopwatch = new Stopwatch();
 
+            int size = labi.Length;
+
             if (loadedLibrary)
             {
                 stopwatch.Start();
 
                 //c++
-                int lab = createLabirynt(hScrollBar1.Value, labirynthWidth, labirynthHeight, cellWidth);
+                bool lab = createLabirynt(hScrollBar1.Value, labirynthWidth, labirynthHeight, cellWidth, out labi, out size);
 
                 stopwatch.Stop();
 
